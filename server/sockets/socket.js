@@ -17,13 +17,16 @@ io.on('connection', (client) => {
         usuarios.agregarPersona(client.id, data.nombre, data.sala);
 
         client.broadcast.to(data.sala).emit('listaPersonas', usuarios.getPersonasPorSala(data.sala)); //se plotea en los demás usuarios conectados a la sala, se emite un mensaje
+
+        client.broadcast.to(data.sala).emit('crearMensaje', crearMensaje('Administrador', `${data.nombre} entró al chat`));
         callback(usuarios.getPersonasPorSala(data.sala)); //se plotean las personas conectadas en la sala en la terminal de quien recarga o se conecta 
     });
 
-    client.on('crearMensaje', (data) => {
+    client.on('crearMensaje', (data, callback) => {
         let persona = usuarios.getPersona(client.id);
         let mensaje = crearMensaje(persona.nombre, data.mensaje);
         client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
+        callback(mensaje);
     });
 
     client.on('disconnect', () => {
